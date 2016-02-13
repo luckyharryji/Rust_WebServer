@@ -13,6 +13,7 @@ use lib::{get_file_content};
 struct Request{
 	url: String,
 	stream:TcpStream,
+	fileType: Option<String>,
 }
 
 
@@ -21,6 +22,7 @@ impl Request{
 		Request{
 			url: "".to_owned(),
 			stream:stream,
+			fileType:None,
 		}
 	}
 
@@ -45,7 +47,7 @@ impl Request{
 	}
 
 
-	fn process_url(&self){
+	fn process_url(&self)->Response{
 		let mut file_addr = String::from("./");
 		file_addr.push_str(&self.url);
 		match get_file_content(&Path::new(&file_addr)){
@@ -61,19 +63,41 @@ impl Request{
 	}
 
 
-	fn form_response(&self, code:usize,content:Option<String>){
+	fn form_response(&self, code:usize,content:Option<String>)->Response{
 		println!("code is : {}", code);
 		match content{
-			Some(content) => println!("> {}", content),
-			None => println!("In-Valid source"),
+			Some(content) => {
+				// println!("> {}", content)
+				let length_of_content = content.len();
+				return Response::new(code, Some(length_of_content), Some(content), Some("text".to_owned())); // xiangyu: rewrite to decide type
+			},
+			None => Response::new(code, None, None, Some("plain".to_owned())),
 		}
 	}
 
-	fn get_response(&mut self){
+	fn get_response(&mut self)->Response{
 		self.set_url();
-		self.process_url();
+		self.process_url()
 	}
+}
 
+
+struct Response{
+	statusCode: usize,
+	contentLength: Option<usize>,
+	content: Option<String>,
+	fileType: Option<String>,
+}
+
+impl Response{
+	fn new(code:usize, contentLength: Option<usize>, content:Option<String>, fileType:Option<String>)->Self{
+		Response{
+			statusCode: code,
+			contentLength: contentLength,
+			content:content,
+			fileType: fileType,
+		}
+	}
 }
 
 
@@ -81,7 +105,7 @@ fn handle_stream(stream:TcpStream){
 	println!("haha {}", stream.local_addr().unwrap());
 	println!("{}", stream.peer_addr().unwrap());
 	let mut request = Request::new(stream);
-	request.get_response();
+	let test_response = request.get_response();
 }
 
 fn write_header(stream:&mut TcpStream){
