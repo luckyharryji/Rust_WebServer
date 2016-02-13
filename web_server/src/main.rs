@@ -1,15 +1,44 @@
-use std::io::{Write,Read};
+// use std::io::{Write,Read};
 use std::net::{TcpListener,TcpStream};
 use std::thread;
+use std::io::Result;
+use std::io::BufReader;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
+
 
 fn handle_stream(mut stream:TcpStream){
 	println!("haha {}", stream.local_addr().unwrap());
 	println!("{}", stream.peer_addr().unwrap());
 	stream.write(b"test response\r\n").unwrap();
-	// let mut x = Vec::<u8>:new();
-	let mut buf = String::new();
-	stream.read_to_string(&mut buf);
-	println!("{}", buf);
+
+	let mut reader_method = BufReader::new(stream).lines();
+	if let Some(Ok(line)) = reader_method.next(){
+		let request_info = line.to_owned();
+		let http_info:Vec<&str> = request_info.split_whitespace().collect();
+		let file_source = http_info[1];
+		process_url(file_source);
+	}
+}
+
+fn get_file_content(path: &Path)->Result<String> {
+    let mut f = try!(File::open(path));
+    let mut s = String::new();
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        Err(e) => Err(e),
+    }
+}
+
+fn process_url(file_source:&str){
+	println!("{}", file_source);
+	let mut file_addr = String::from("./");
+	file_addr.push_str(file_source);
+	match get_file_content(&Path::new(&file_addr)){
+		Err(meg) => println!("!{:?}", meg.kind()),
+		Ok(s)=>println!("> {}", s),
+	}
 }
 
 fn main() {
@@ -28,33 +57,5 @@ fn main() {
 			}
 		}
     }
-    // drop(listener);
+    drop(listener);
 }
-
-// use std::net::{Shutdown, TcpListener};
-// use std::thread;
-// use std::io::Write;
- 
-// const RESPONSE: &'static [u8] = b"HTTP/1.1 200 OK\r
-// Content-Type: text/html; charset=UTF-8\r\n\r
-// <!DOCTYPE html><html><head><title>Bye-bye baby bye-bye</title>
-// <style>body { background-color: #111 }
-// h1 { font-size:4cm; text-align: center; color: black;
-// text-shadow: 0 0 2mm red}</style></head>
-// <body><h1>Goodbye, world!</h1></body></html>\r";
- 
- 
-// fn main() {
-//     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
- 
-//     for stream in listener.incoming() {
-//         thread::spawn(move || {
-//             let mut stream = stream.unwrap();
-//             match stream.write(RESPONSE) {
-//                 Ok(_) => println!("Response sent!"),
-//                 Err(e) => println!("Failed sending response: {}!", e),
-//             }
-//             stream.shutdown(Shutdown::Write).unwrap();
-//         });
-//     }
-// }
