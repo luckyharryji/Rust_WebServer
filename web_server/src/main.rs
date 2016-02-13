@@ -41,6 +41,17 @@ fn process_url(file_source:&str){
 	}
 }
 
+
+fn status_info<'a>(code:usize)->&'a str{
+	match code{
+		200 => "OK",
+		400 => "Bad Request",
+		403 => "Forbidden",
+		404 => "Not Found",
+		_ => "code Error",
+	}
+}
+
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     println!("listening started, ready to accept");
