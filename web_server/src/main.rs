@@ -1,15 +1,9 @@
-// use std::io::{Write,Read};
-// extern crate regex;
-
 use std::net::{TcpListener,TcpStream};
 use std::thread;
-// use std::io::Result;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::io::ErrorKind;
-// use std::fs::File;
 use std::path::Path;
-// use regex::Regex;
 
 
 pub mod lib;
@@ -30,7 +24,7 @@ impl Request{
 		}
 	}
 
-	fn extract_url(&mut self)->Option<String>{
+	fn extract_url(&self)->Option<String>{
 		let mut reader_method = BufReader::new(&self.stream).lines();
 		match reader_method.next(){
 			Some(Ok(line)) =>{
@@ -42,38 +36,56 @@ impl Request{
 			_ => return None,
 		}
 	}
+
+	fn set_url(&mut self){
+		match self.extract_url(){
+			Some(url)=> self.url = url,
+			None => println!("url not exist"),
+		}
+	}
+
+
+	fn process_url(&self){
+		let mut file_addr = String::from("./");
+		file_addr.push_str(&self.url);
+		match get_file_content(&Path::new(&file_addr)){
+			Err(meg) => {
+				match meg.kind(){
+					ErrorKind::NotFound => self.form_response(404, None),
+					ErrorKind::PermissionDenied => self.form_response(403, None),
+					_ => self.form_response(400, None),
+				}
+			},
+			Ok(s)=>self.form_response(200, Some(s)),
+		}
+	}
+
+
+	fn form_response(&self, code:usize,content:Option<String>){
+		println!("code is : {}", code);
+		match content{
+			Some(content) => println!("> {}", content),
+			None => println!("In-Valid source"),
+		}
+	}
+
+	fn get_response(&mut self){
+		self.set_url();
+		self.process_url();
+	}
+
 }
 
 
-fn handle_stream(mut stream:TcpStream){
+fn handle_stream(stream:TcpStream){
 	println!("haha {}", stream.local_addr().unwrap());
 	println!("{}", stream.peer_addr().unwrap());
 	let mut request = Request::new(stream);
-	match request.extract_url(){
-		Some(url) => println!("get url in this way {}", url),
-		_ => println!("Error here"),
-	}
+	request.get_response();
 }
 
 fn write_header(stream:&mut TcpStream){
 	stream.write(b"test response\r\n").unwrap();
-}
-
-fn process_url(file_source:&str){
-	println!("{}", file_source);
-	let mut file_addr = String::from("./");
-	file_addr.push_str(file_source);
-	match get_file_content(&Path::new(&file_addr)){
-		Err(meg) => {
-			match meg.kind(){
-				// rewrite to return code here
-				ErrorKind::NotFound => println!("can not find file"), //404
-				ErrorKind::PermissionDenied => println!("Permission denied"), //403
-				_ => println!("!{:?}", meg.kind()), //400
-			}
-		},
-		Ok(s)=>println!("> {}", s),  //200
-	}
 }
 
 
