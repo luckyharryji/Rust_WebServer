@@ -1,10 +1,12 @@
+extern crate regex;
+
 use std::net::{TcpListener,TcpStream};
 use std::thread;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::path::Path;
-
+use regex::Regex;
 
 pub mod lib;
 use lib::{get_file_content};
@@ -13,7 +15,6 @@ use lib::{get_file_content};
 struct Request{
 	url: String,
 	stream:TcpStream,
-	file_type: Option<String>,
 }
 
 
@@ -22,7 +23,6 @@ impl Request{
 		Request{
 			url: "".to_owned(),
 			stream:stream,
-			file_type:None,
 		}
 	}
 
@@ -33,6 +33,9 @@ impl Request{
 				let request_info = line.to_owned();
 				let http_info:Vec<&str> = request_info.split_whitespace().collect();
 				let file_source = http_info[1];
+
+				println!("Try regex {} ends with {}", &file_source, &file_source.ends_with(".txt"));
+				
 				return Some(file_source.to_owned());
 			},
 			_ => return None,
@@ -64,12 +67,23 @@ impl Request{
 
 
 	fn form_response(&self, code:usize,content:Option<String>)->Response{
+		// Only have conten-type when get a file with code 200
+		let response_file_type = match code{
+			200=>{
+				match self.url.ends_with(".html"){
+					true => Some("html".to_owned()),
+					false => Some("plain".to_owned()),
+				}
+			},
+			_ => None,
+		};
+
 		match content{
 			Some(content) => {
 				let length_of_content = content.len();
-				return Response::new(code, Some(length_of_content), Some(content), Some("text".to_owned()),&self.stream); // xiangyu: rewrite to decide type
+				return Response::new(code, Some(length_of_content), Some(content), response_file_type, &self.stream); // xiangyu: rewrite to decide type
 			},
-			None => Response::new(code, None, None, Some("plain".to_owned()),&self.stream),
+			None => Response::new(code, None, None, response_file_type, &self.stream),
 		}
 	}
 
@@ -106,7 +120,7 @@ impl <'a>Response<'a>{
 		let server_name = "Xiangyu and Nianzu: Rust-Server/0.1\r\n";
 
 		let response_type_info = match self.file_type{
-			Some(ref file_type)=>file_type.to_owned(),
+			Some(ref file_type)=>format!("Content-type: text/{}\r\n",file_type.to_owned()),
 			None => "".to_owned(),
 		};
 
@@ -122,6 +136,7 @@ impl <'a>Response<'a>{
 
 		let result = header+server_name+&response_type_info+&response_content_length_info+&response_content;
 
+		println!("{}",result);
 		self.write_to_stream(&result);
 	}
 
@@ -145,7 +160,7 @@ fn get_status_info<'a>(code:usize)->&'a str{
 		400 => "Bad Request",
 		403 => "Forbidden",
 		404 => "Not Found",
-		_ => "code Error",
+		_ => "Code Error",  // never call here
 	}
 }
 
