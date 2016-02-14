@@ -10,6 +10,17 @@ pub mod lib;
 use lib::{get_file_content, write_into_file};
 
 
+/**
+Road Map:
+
+Luo Fei, Nianzu, Xiangyu
+
+Ramaining to be finish:
+	- test case
+	- log file
+	- fully OOP design with url wrap
+**/
+
 struct Request{
 	url: String,
 	stream:TcpStream,
