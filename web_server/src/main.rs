@@ -49,10 +49,26 @@ impl Request{
 		let mut file_addr = String::from("./");
 
 		file_addr.push_str(&self.url);
-		if let Some(ele) = file_addr.chars().nth(file_addr.len()-1){
-			println!("{}", ele);
+
+		match self.url.ends_with("/"){
+			true => return self.parse_dir(&file_addr),
+			false => return self.parse_file(&file_addr),
 		}
-		
+	}
+
+	fn parse_dir(&self, file_addr: &str)->Response{
+		let file_name = vec!["index.html", "index.shtml", "index.txt"];
+		for file in &file_name{
+			let mut source_addr = file_addr.to_owned();
+			source_addr.push_str(file);
+			if let Ok(s) = get_file_content(&Path::new(&file_addr)){
+				return self.form_response(200, Some(s));
+			}
+		}
+		return self.form_response(404, None);
+	}
+
+	fn parse_file(&self, file_addr: &str)->Response{
 		match get_file_content(&Path::new(&file_addr)){
 			Err(meg) => {
 				match meg.kind(){
@@ -64,8 +80,6 @@ impl Request{
 			Ok(s)=>self.form_response(200, Some(s)),
 		}
 	}
-
-	// fn parse_dir_file()
 
 	fn form_response(&self, code:usize,content:Option<String>)->Response{
 		// Only have conten-type when get a file with code 200
