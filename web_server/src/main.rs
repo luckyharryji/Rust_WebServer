@@ -39,37 +39,39 @@ impl Request{
 
 	fn set_url(&mut self){
 		match self.extract_url(){
-			Some(url)=> self.url = url,
+			Some(url)=> {
+				let mut file_addr = String::from("./");
+				file_addr.push_str(&url);
+				self.url = file_addr;
+			},
 			None => println!("url not exist"),
 		}
 	}
 
 
 	fn process_url(&self)->Response{
-		let mut file_addr = String::from("./");
-
-		file_addr.push_str(&self.url);
-
 		match self.url.ends_with("/"){
-			true => return self.parse_dir(&file_addr),
-			false => return self.parse_file(&file_addr),
+			true => return self.parse_dir(),
+			false => return self.parse_file(),
 		}
 	}
 
-	fn parse_dir(&self, file_addr: &str)->Response{
+
+	fn parse_dir(&self)->Response{
 		let file_name = vec!["index.html", "index.shtml", "index.txt"];
+		let origin_url = &self.url;
 		for file in &file_name{
-			let mut source_addr = file_addr.to_owned();
+			let mut source_addr = origin_url.to_owned();
 			source_addr.push_str(file);
-			if let Ok(s) = get_file_content(&Path::new(&file_addr)){
+			if let Ok(s) = get_file_content(&Path::new(&source_addr)){
 				return self.form_response(200, Some(s));
 			}
 		}
 		return self.form_response(404, None);
 	}
 
-	fn parse_file(&self, file_addr: &str)->Response{
-		match get_file_content(&Path::new(&file_addr)){
+	fn parse_file(&self)->Response{
+		match get_file_content(&Path::new(&self.url)){
 			Err(meg) => {
 				match meg.kind(){
 					ErrorKind::NotFound => self.form_response(404, None),
