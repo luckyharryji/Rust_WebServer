@@ -11,3 +11,11 @@ pub fn get_file_content(path: &Path)->Result<String> {
         Err(e) => Err(e),
     }
 }
+
+pub fn write_into_file(content: String)->Result<()>{
+	let mut f = try!(File::open("log.txt"));
+	match f.write(content.as_bytes()){
+		Ok(_) => Ok(()),
+        Err(e) => Err(e),
+	}
+}

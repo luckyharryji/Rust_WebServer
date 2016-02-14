@@ -7,7 +7,7 @@ use std::io::ErrorKind;
 use std::path::Path;
 
 pub mod lib;
-use lib::{get_file_content};
+use lib::{get_file_content, write_into_file};
 
 
 struct Request{
@@ -63,6 +63,7 @@ impl Request{
 		for file in &file_name{
 			let mut source_addr = origin_url.to_owned();
 			source_addr.push_str(file);
+
 			if let Ok(s) = get_file_content(&Path::new(&source_addr)){
 				return self.form_response(200, Some(s));
 			}
@@ -103,6 +104,21 @@ impl Request{
 			None => Response::new(code, None, None, response_file_type, &self.stream),
 		}
 	}
+
+
+	fn record_log(&mut self){
+		let mut strem_content = String::new();
+		match self.stream.read_to_string(&mut strem_content){
+			Ok(_) => {
+				match write_into_file(strem_content){
+					Err(_)=>println!("Log Record File"),
+					Ok(_) => println!("Log Record Success"),
+				}
+			},
+			Err(e) => println!("{}", e),
+		}
+	}
+
 
 	fn get_response(&mut self)->Response{
 		self.set_url();
@@ -166,6 +182,7 @@ impl <'a>Response<'a>{
 
 fn handle_stream(stream:TcpStream){
 	let mut request = Request::new(stream);
+	// request.record_log();
 	let mut send_response = request.get_response();
 	send_response.write_response();
 }
