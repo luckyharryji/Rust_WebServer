@@ -1,4 +1,3 @@
-extern crate regex;
 
 use std::net::{TcpListener,TcpStream};
 use std::thread;
@@ -6,7 +5,6 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::path::Path;
-use regex::Regex;
 
 pub mod lib;
 use lib::{get_file_content};
@@ -32,10 +30,7 @@ impl Request{
 			Some(Ok(line)) =>{
 				let request_info = line.to_owned();
 				let http_info:Vec<&str> = request_info.split_whitespace().collect();
-				let file_source = http_info[1];
-
-				println!("Try regex {} ends with {}", &file_source, &file_source.ends_with(".txt"));
-				
+				let file_source = http_info[1];				
 				return Some(file_source.to_owned());
 			},
 			_ => return None,
@@ -52,7 +47,12 @@ impl Request{
 
 	fn process_url(&self)->Response{
 		let mut file_addr = String::from("./");
+
 		file_addr.push_str(&self.url);
+		if let Some(ele) = file_addr.chars().nth(file_addr.len()-1){
+			println!("{}", ele);
+		}
+		
 		match get_file_content(&Path::new(&file_addr)){
 			Err(meg) => {
 				match meg.kind(){
@@ -65,6 +65,7 @@ impl Request{
 		}
 	}
 
+	// fn parse_dir_file()
 
 	fn form_response(&self, code:usize,content:Option<String>)->Response{
 		// Only have conten-type when get a file with code 200
