@@ -7,7 +7,7 @@ use std::io::ErrorKind;
 use std::path::Path;
 
 pub mod lib;
-use lib::{get_file_content, write_into_file};
+use lib::{get_file_content, write_into_file,get_status_info};
 
 
 /**
@@ -198,16 +198,6 @@ fn handle_stream(stream:TcpStream){
 	send_response.write_response();
 }
 
-
-fn get_status_info<'a>(code:usize)->&'a str{
-	match code{
-		200 => "OK",
-		400 => "Bad Request",
-		403 => "Forbidden",
-		404 => "Not Found",
-		_ => "Code Error",  // never call here
-	}
-}
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();

@@ -19,3 +19,13 @@ pub fn write_into_file(content: String)->Result<()>{
         Err(e) => Err(e),
 	}
 }
+
+pub fn get_status_info<'a>(code:usize)->&'a str{
+	match code{
+		200 => "OK",
+		400 => "Bad Request",
+		403 => "Forbidden",
+		404 => "Not Found",
+		_ => "Code Error",  // never call here
+	}
+}
