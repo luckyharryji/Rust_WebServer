@@ -41,7 +41,7 @@ impl Request{
 			Some(Ok(line)) =>{
 				let request_info = line.to_owned();
 				let http_info:Vec<&str> = request_info.split_whitespace().collect();
-				let file_source = http_info[1];				
+				let file_source = http_info[1];
 				return Some(file_source.to_owned());
 			},
 			_ => return None,
@@ -118,12 +118,12 @@ impl Request{
 
 
 	fn record_log(&mut self){
-		let mut strem_content = String::new();
-		match self.stream.read_to_string(&mut strem_content){
+		let mut log_content = String::new();
+		match self.stream.read_to_string(&mut log_content){
 			Ok(_) => {
-				match write_into_file(strem_content){
-					Err(_)=>println!("Log Record File"),
-					Ok(_) => println!("Log Record Success"),
+				match write_into_file(log_content){
+					Err(_)=>println!("Failed to record logs"),
+					Ok(_) => println!("Log Recorded"),
 				}
 			},
 			Err(e) => println!("{}", e),
