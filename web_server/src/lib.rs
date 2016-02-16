@@ -6,7 +6,7 @@ use std::io::prelude::*;
 pub fn get_file_content(path: &Path)->Result<String> {
     let mut f = try!(File::open(path));
     let mut s = String::new();
-    match f.read_to_string(&mut s) {
+    match f.read_to_string(&mut s) {  // rewrite with buffer read
         Ok(_) => Ok(s),
         Err(e) => Err(e),
     }
