@@ -13,52 +13,59 @@ use lib::{get_file_content, write_into_file,get_status_info};
 /**
 Road Map:
 
-Luo Fei, Nianzu, Xiangyu
+Nianzu, Xiangyu
 
 Ramaining to be finish:
 	- test case
-	- log file
+	- how to open and write rather than create
 	- fully OOP design with url wrap
 **/
 
 struct Request{
 	url: String,
 	stream:TcpStream,
+	request_info:String,
 }
 
 
 impl Request{
-	fn new(stream:TcpStream)->Self{
+	fn new(mut stream:TcpStream)->Self{
+		let mut http_reader = BufReader::new(stream);
+		let mut log_request_info = String::new();
+		
+		let mut header = String::new();
+		let mut http_info = Vec::<&str>::new();
+		match http_reader.read_line(&mut header).unwrap()>0{
+			true=> {
+				http_info= header.split_whitespace().collect();
+			},
+			false =>{
+				println!("request wrong");
+			},
+		}
+		log_request_info.push_str(&header);
+
+		let mut read_stream_info = String::new();
+		while http_reader.read_line(&mut read_stream_info).unwrap()>0{
+			if read_stream_info == "\r\n".to_owned(){
+				break;
+			}
+			let record = read_stream_info.to_owned();
+			log_request_info.push_str(&record);
+			read_stream_info.clear();
+		}
+
+		let file_source = http_info[1];
+		stream = http_reader.into_inner();
+		let mut file_addr = String::from("./");
+		file_addr.push_str(file_source);
+
 		Request{
-			url: "".to_owned(),
+			url: file_addr,
 			stream:stream,
+			request_info:log_request_info,
 		}
 	}
-
-	fn extract_url(&self)->Option<String>{
-		let mut reader_method = BufReader::new(&self.stream).lines();
-		match reader_method.next(){
-			Some(Ok(line)) =>{
-				let request_info = line.to_owned();
-				let http_info:Vec<&str> = request_info.split_whitespace().collect();
-				let file_source = http_info[1];
-				return Some(file_source.to_owned());
-			},
-			_ => return None,
-		}
-	}
-
-	fn set_url(&mut self){
-		match self.extract_url(){
-			Some(url)=> {
-				let mut file_addr = String::from("./");
-				file_addr.push_str(&url);
-				self.url = file_addr;
-			},
-			None => println!("url not exist"),
-		}
-	}
-
 
 	fn process_url(&self)->Response{
 		match self.url.ends_with("/"){
@@ -118,21 +125,15 @@ impl Request{
 
 
 	fn record_log(&mut self){
-		let mut log_content = String::new();
-		match self.stream.read_to_string(&mut log_content){
-			Ok(_) => {
-				match write_into_file(log_content){
-					Err(_)=>println!("Failed to record logs"),
-					Ok(_) => println!("Log Recorded"),
-				}
-			},
-			Err(e) => println!("{}", e),
+		// let all_request_info = self.request_info;
+		match write_into_file(&self.request_info){
+			Err(_)=>println!("Failed to record logs"),
+			Ok(_) => println!("Log Recorded"),
 		}
 	}
 
 
 	fn get_response(&mut self)->Response{
-		self.set_url();
 		self.process_url()
 	}
 }
@@ -179,8 +180,6 @@ impl <'a>Response<'a>{
 		};
 
 		let result = header+server_name+&response_type_info+&response_content_length_info+&response_content;
-
-		println!("{}",result);
 		self.write_to_stream(&result);
 	}
 
@@ -193,7 +192,7 @@ impl <'a>Response<'a>{
 
 fn handle_stream(stream:TcpStream){
 	let mut request = Request::new(stream);
-	// request.record_log();
+	request.record_log();
 	let mut send_response = request.get_response();
 	send_response.write_response();
 }

@@ -12,11 +12,14 @@ pub fn get_file_content(path: &Path)->Result<String> {
     }
 }
 
-pub fn write_into_file(content: String)->Result<()>{
-	let mut f = try!(File::open("log.txt"));
+pub fn write_into_file(http_content: &str)->Result<()>{
+	let mut f = try!(File::create("log.txt"));   // can not open and write????
+	let content = http_content.to_owned();
 	match f.write(content.as_bytes()){
 		Ok(_) => Ok(()),
-        Err(e) => Err(e),
+        Err(e) => {
+        	return Err(e);
+        },
 	}
 }
 
