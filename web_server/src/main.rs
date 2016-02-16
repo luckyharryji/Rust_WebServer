@@ -18,7 +18,6 @@ Nianzu, Xiangyu
 Ramaining to be finish:
 	- test case
 	- how to open and write rather than create
-	- fully OOP design with url wrap
 **/
 
 struct Request{
@@ -67,7 +66,7 @@ impl Request{
 		}
 	}
 
-	fn process_url(&self)->Response{
+	fn process_url(&mut self)->Response{
 		match self.url.ends_with("/"){
 			true => return self.parse_dir(),
 			false => return self.parse_file(),
@@ -75,14 +74,15 @@ impl Request{
 	}
 
 
-	fn parse_dir(&self)->Response{
+	fn parse_dir(&mut self)->Response{
 		let file_name = vec!["index.html", "index.shtml", "index.txt"];
-		let origin_url = &self.url;
+		let origin_url = self.url.clone();
 		for file in &file_name{
 			let mut source_addr = origin_url.to_owned();
 			source_addr.push_str(file);
 
 			if let Ok(s) = get_file_content(&Path::new(&source_addr)){
+				self.url = source_addr;
 				return self.form_response(200, Some(s));
 			}
 		}
