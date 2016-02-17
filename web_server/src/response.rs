@@ -3,12 +3,13 @@ use std::io::prelude::*;
 
 use lib::{get_status_info,write_into_file};
 
+// define response structure to send back to client
 pub struct Response<'a>{
 	status_code: usize,
 	content_length: Option<usize>,
 	content: Option<String>,
 	file_type: Option<String>,
-	stream: &'a TcpStream,
+	stream: &'a TcpStream,		// since repsonse and request share same TcpStream, lifetime should be set here
 }
 
 impl <'a>Response<'a>{
@@ -22,8 +23,8 @@ impl <'a>Response<'a>{
 		}
 	}
 
-	//exposed public function
-
+	/**exposed public function**/
+	// send response info through TcpStream
 	pub fn write_response(&mut self)->usize{
 		let status_info = get_status_info(self.status_code).to_owned();
 		let header = format!("HTTP/1.0 {} {}\r\n", self.status_code, status_info);
@@ -49,13 +50,7 @@ impl <'a>Response<'a>{
 		self.status_code
 	}
 
-	//private function
-
-	fn write_to_stream(&mut self, content:&str){
-		let response_write_content = content.to_owned();
-		self.stream.write(response_write_content.as_bytes()).unwrap();
-	}
-
+	// write reponse status and time into log
 	pub fn record_log(&mut self,time:&str,status_code:usize){
 		let format_log = "Response Time: ".to_owned()+time+"\r\n"+"Response Status Code: "+&status_code.to_string()+"\r\n\r\n";
 		match write_into_file(&format_log){
@@ -64,4 +59,10 @@ impl <'a>Response<'a>{
 		}
 	}
 
+	/**private function**/
+	// write reponse to TcpStream
+	fn write_to_stream(&mut self, content:&str){
+		let response_write_content = content.to_owned();
+		self.stream.write(response_write_content.as_bytes()).unwrap();
+	}
 }
