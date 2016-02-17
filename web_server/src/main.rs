@@ -36,6 +36,7 @@
 
 
 	Assumptions:
+		- Program will automatically create file named 'log.txt' and write log inside if it does not exist
 		- The file inside folder url request are ranked as 'index.html'>'index.shtml'>'index.txt'
 		- Request only have GET type
 		- Log are located in the host source, all log in one file named 'log.txt'
