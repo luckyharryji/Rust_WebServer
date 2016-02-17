@@ -7,7 +7,6 @@ use std::path::Path;
 use response::Response;
 use lib::{get_file_content,write_into_file};
 
-
 pub struct Request{
 	url: String,
 	stream:TcpStream,
@@ -56,8 +55,9 @@ impl Request{
 
 	//exposed public function
 
-	pub fn record_log(&mut self){
-		match write_into_file(&self.request_info){
+	pub fn record_log(&mut self,time:&str){
+		let format_log = "Request Time: ".to_owned()+time+"\r\n"+&self.request_info+"\r\n";
+		match write_into_file(&format_log){
 			Err(_)=>println!("Failed to record logs"),
 			Ok(_) => println!("Log Recorded"),
 		}

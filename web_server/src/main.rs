@@ -2,6 +2,8 @@
 use std::net::{TcpListener,TcpStream};
 use std::thread;
 
+extern crate time;
+
 pub mod lib;
 
 mod response;
@@ -16,15 +18,18 @@ Nianzu, Xiangyu
 
 Ramaining to be finish:
 	- test case
-	- how to open and write rather than create
-	- log: time and status code
+	- rewrite file read buffer
 **/
 
 fn handle_stream(stream:TcpStream){
+	let request_time = time::now().ctime().to_string();
 	let mut request = Request::new(stream);
-	request.record_log();
-	let mut send_response = request.get_response();
-	send_response.write_response();
+	request.record_log(&request_time);
+
+	let mut response = request.get_response();
+	let reponse_code = response.write_response();
+	let response_time = time::now().ctime().to_string();
+	response.record_log(&response_time, reponse_code);
 }
 
 

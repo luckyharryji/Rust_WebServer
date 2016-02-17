@@ -2,6 +2,7 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Result;
 use std::io::prelude::*;
+use std::fs::OpenOptions;
 
 pub fn get_file_content(path: &Path)->Result<String> {
     let mut f = try!(File::open(path));
@@ -13,7 +14,7 @@ pub fn get_file_content(path: &Path)->Result<String> {
 }
 
 pub fn write_into_file(http_content: &str)->Result<()>{
-	let mut f = try!(File::create("log.txt"));   // can not open and write????
+	let mut f = try!(OpenOptions::new().write(true).append(true).open("log.txt"));   // can not open and write????
 	let content = http_content.to_owned();
 	match f.write(content.as_bytes()){
 		Ok(_) => Ok(()),

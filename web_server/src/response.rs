@@ -1,7 +1,7 @@
 use std::net::TcpStream;
 use std::io::prelude::*;
 
-use lib::get_status_info;
+use lib::{get_status_info,write_into_file};
 
 pub struct Response<'a>{
 	status_code: usize,
@@ -24,7 +24,7 @@ impl <'a>Response<'a>{
 
 	//exposed public function
 
-	pub fn write_response(&mut self){
+	pub fn write_response(&mut self)->usize{
 		let status_info = get_status_info(self.status_code).to_owned();
 		let header = format!("HTTP/1.0 {} {}\r\n", self.status_code, status_info);
 		let server_name = "Xiangyu and Nianzu: Rust-Server/0.1\r\n";
@@ -46,6 +46,7 @@ impl <'a>Response<'a>{
 
 		let result = header+server_name+&response_type_info+&response_content_length_info+&response_content;
 		self.write_to_stream(&result);
+		self.status_code
 	}
 
 	//private function
@@ -54,4 +55,13 @@ impl <'a>Response<'a>{
 		let response_write_content = content.to_owned();
 		self.stream.write(response_write_content.as_bytes()).unwrap();
 	}
+
+	pub fn record_log(&mut self,time:&str,status_code:usize){
+		let format_log = "Response Time: ".to_owned()+time+"\r\n"+"Response Status Code: "+&status_code.to_string()+"\r\n\r\n";
+		match write_into_file(&format_log){
+			Err(_)=>println!("Failed to record logs"),
+			Ok(_) => println!("Log Recorded"),
+		}
+	}
+
 }
