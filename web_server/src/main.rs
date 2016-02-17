@@ -45,6 +45,8 @@
 
 use std::net::{TcpListener,TcpStream};
 use std::thread;
+use std::sync::{Arc,Mutex};
+use std::fs::OpenOptions;
 
 extern crate time;  // import for record time for log
 
@@ -64,15 +66,15 @@ Ramaining to be finish:
 	- test case
 **/
 
-fn handle_stream(stream:TcpStream){
+fn handle_stream(stream:TcpStream,write_log_file: &Arc<Mutex<OpenOptions>>){
 	let request_time = time::now().ctime().to_string();    // record time when request come
 	let mut request = Request::new(stream);				   // parse the request, extract url and all requet info
-	request.record_log(&request_time);					   // write request info into log
+	request.record_log(&request_time,write_log_file);					   // write request info into log
 
 	let mut response = request.get_response();			   // create response structure from request information
 	let reponse_code = response.write_response();		   // send back response to the client
 	let response_time = time::now().ctime().to_string();   // record time when send out response
-	response.record_log(&response_time, reponse_code);     // write request info into log
+	response.record_log(&response_time, reponse_code,write_log_file);     // write request info into log
 }
 
 
@@ -81,11 +83,13 @@ fn main() {
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
     println!("Server Started");
 
+    let file_for_log = Arc::new(Mutex::new(OpenOptions::new()));
     for stream in listener.incoming() {
+    	let log_file_for_write = file_for_log.clone();
 		match stream{
 			Ok(stream)=>{  				
 				thread::spawn(move || {  // spawn a thread for each request 
-					handle_stream(stream);
+					handle_stream(stream,&log_file_for_write);
 				});
 			},
 			Err(e)=>{

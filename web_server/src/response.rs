@@ -1,5 +1,7 @@
 use std::net::TcpStream;
 use std::io::prelude::*;
+use std::sync::{Arc,Mutex};
+use std::fs::OpenOptions;
 
 use lib::{get_status_info,write_into_file};
 
@@ -51,9 +53,9 @@ impl <'a>Response<'a>{
 	}
 
 	// write reponse status and time into log
-	pub fn record_log(&mut self,time:&str,status_code:usize){
+	pub fn record_log(&mut self,time:&str,status_code:usize,write_log_file: &Arc<Mutex<OpenOptions>>){
 		let format_log = "Response Time: ".to_owned()+time+"\r\n"+"Response Status Code: "+&status_code.to_string()+"\r\n\r\n";
-		match write_into_file(&format_log){
+		match write_into_file(&format_log,write_log_file){
 			Err(_)=>println!("Failed to record logs"),
 			Ok(_) => println!("Log Recorded"),
 		}
