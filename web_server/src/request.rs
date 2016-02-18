@@ -133,3 +133,11 @@ impl Request{
 		}
 	}
 }
+
+#[cfg(test)]
+mod request_test {
+
+	use super::Request;
+
+
+}
