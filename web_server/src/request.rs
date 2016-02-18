@@ -3,6 +3,8 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::io::ErrorKind;
 use std::path::Path;
+use std::fs::OpenOptions;
+use std::sync::{Arc,Mutex};
 
 use response::Response;
 use lib::{get_file_content,write_into_file};
@@ -58,9 +60,9 @@ impl Request{
 
 	/**exposed public function**/
 	// record request time and all the request info into log
-	pub fn record_log(&mut self,time:&str){
+	pub fn record_log(&mut self,time:&str, write_log_file: &Arc<Mutex<OpenOptions>>){
 		let format_log = "Request Time: ".to_owned()+time+"\r\n"+&self.request_info+"\r\n";
-		match write_into_file(&format_log){
+		match write_into_file(&format_log,write_log_file){
 			Err(_)=>println!("Failed to record logs"),
 			Ok(_) => println!("Log Recorded"),
 		}
