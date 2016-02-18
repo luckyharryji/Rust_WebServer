@@ -2,7 +2,7 @@
 	__author__ = 'Xiangyu Ji,  Nianzu Li'
 	
 	This program create a demo web server with Rust which can parse Get http request
-	Host is in the local 127.0.0.1  port: 8000
+	Host is in the local 127.0.0.1  port: 8080
 	
 	INPUT:
 		The program will run to wait for the request to the host    
@@ -39,6 +39,8 @@
 		- Program will automatically create file named 'log.txt' and write log inside if it does not exist
 		- The file inside folder url request are ranked as 'index.html'>'index.shtml'>'index.txt'
 		- Request only have GET type
+		- The first line (request line) of request contains all the information we need
+		- Request header ends up in a blank line
 		- Log are located in the host source, all log in one file named 'log.txt'
 "]
 
@@ -101,3 +103,4 @@ fn main() {
     // close server
     drop(listener);
 }
+

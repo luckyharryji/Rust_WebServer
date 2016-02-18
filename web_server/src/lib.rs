@@ -71,8 +71,6 @@ mod lib_function_test {
 		assert_eq!(expected, under_test);
 
 		remove_file(Path::new("temp.txt")).unwrap();
-
-
 	}
 
 	#[test]
@@ -88,30 +86,28 @@ mod lib_function_test {
 
 		{
 			let log_mutex = Arc::new(Mutex::new(OpenOptions::new()));
-			write_into_file(&line1, &log_mutex);
+			let _  = write_into_file(&line1, &log_mutex);
 
 			let mut f = File::open("log.txt").unwrap();
 
-			f.seek(SeekFrom::Start(eof));
+			let _ = f.seek(SeekFrom::Start(eof));
 			let mut s = String::new();
 			f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned(), s); 
 			s.clear();
 			drop(f);
 
-			write_into_file(&line2, &log_mutex);
+			let _ = write_into_file(&line2, &log_mutex);
 
 			let mut f = File::open("log.txt").unwrap();
 
-			f.seek(SeekFrom::Start(eof));
-			f.read_to_string(&mut s).unwrap();
+			let _ = f.seek(SeekFrom::Start(eof));
+			let _ = f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned() + line2, s); 
 			drop(f);
 
 			remove_file("log.txt").unwrap();
 		}
-
-
 
 		match expected {
 			Ok(content) => {
@@ -119,8 +115,7 @@ mod lib_function_test {
 				f.write(content.as_bytes()).unwrap();
 			},
 			Err(_) => (),
-
 		} ;
-
 	}
+
 }

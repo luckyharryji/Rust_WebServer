@@ -24,6 +24,7 @@ impl Request{
 		
 		let mut header = String::new();
 		let mut http_info = Vec::<&str>::new();
+		
 		// first get the request file from first line of the stream
 		match http_reader.read_line(&mut header).unwrap()>0{
 			true=> {
@@ -136,10 +137,3 @@ impl Request{
 	}
 }
 
-#[cfg(test)]
-mod request_test {
-
-	use super::Request;
-
-
-}
