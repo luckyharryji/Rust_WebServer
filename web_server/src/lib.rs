@@ -44,10 +44,11 @@ pub fn get_status_info<'a>(code:usize)->&'a str{
 mod lib_function_test {
 
 	use super::{get_file_content, write_into_file, get_status_info};
-	use std::fs::{File, remove_file};
+	use std::fs::{File, OpenOptions, remove_file};
 	use std::io::prelude::*;
 	use std::io::SeekFrom;
 	use std::path::Path;
+	use std::sync::{Arc,Mutex};
 
 	#[test]
 	fn status_info_test(){
@@ -78,16 +79,16 @@ mod lib_function_test {
 	fn write_file_file_test(){
 		let line1 = "This is 1st test line\n";
 		let line2 = "This is 2nd test line\n";
-
-		let eof = {
-			let mut f = File::open("log.txt").unwrap();
-			f.seek(SeekFrom::End(0)).unwrap()
+		let expected = get_file_content(Path::new("log.txt"));
+		let eof = match expected.as_ref() {
+			Ok(_) =>  File::open("log.txt").unwrap().seek(SeekFrom::End(0)).unwrap(),
+			Err(_) => 0,
 		};
 
-		let expected = get_file_content(Path::new("log.txt")).unwrap();
 
 		{
-			write_into_file(&line1);
+			let log_mutex = Arc::new(Mutex::new(OpenOptions::new()));
+			write_into_file(&line1, &log_mutex);
 
 			let mut f = File::open("log.txt").unwrap();
 
@@ -98,7 +99,7 @@ mod lib_function_test {
 			s.clear();
 			drop(f);
 
-			write_into_file(&line2);
+			write_into_file(&line2, &log_mutex);
 
 			let mut f = File::open("log.txt").unwrap();
 
@@ -106,11 +107,20 @@ mod lib_function_test {
 			f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned() + line2, s); 
 			drop(f);
+
+			remove_file("log.txt").unwrap();
 		}
 
-		
-		let mut f = File::create("temp.txt").unwrap();
-		f.write(expected.as_bytes()).unwrap();
+
+
+		match expected {
+			Ok(content) => {
+				let mut f = File::create("log.txt").unwrap();
+				f.write(content.as_bytes()).unwrap();
+			},
+			Err(_) => (),
+
+		} ;
 
 	}
 }
