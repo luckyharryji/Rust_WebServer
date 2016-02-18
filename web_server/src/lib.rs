@@ -71,8 +71,6 @@ mod lib_function_test {
 		assert_eq!(expected, under_test);
 
 		remove_file(Path::new("temp.txt")).unwrap();
-
-
 	}
 
 	#[test]
@@ -99,8 +97,8 @@ mod lib_function_test {
 			if let Err(_) = f.seek(SeekFrom::Start(eof)){
 				println!("File Seek Error");
 			};
-
 			let mut s = String::new();
+
 			f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned(), s); 
 			s.clear();
@@ -123,16 +121,13 @@ mod lib_function_test {
 			remove_file("log.txt").unwrap();
 		}
 
-
-
 		match expected {
 			Ok(content) => {
 				let mut f = File::create("log.txt").unwrap();
 				f.write(content.as_bytes()).unwrap();
 			},
 			Err(_) => (),
-
 		} ;
-
 	}
+
 }

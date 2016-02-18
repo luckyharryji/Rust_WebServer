@@ -48,6 +48,8 @@
 		- Request only support GET type
 		- Log file are located in the host source, all log in one file named 'log.txt'
 		- Lock on the log.txt, one request/reponse can add at a time
+		- The first line (request line) of request contains all the information we need
+		- Request header ends up in a blank line
 "]
 
 
@@ -106,8 +108,6 @@ fn initial_bind_server(port:usize){
     // close server
     drop(listener);
 }
-
-
 
 
 /** test framework**/
