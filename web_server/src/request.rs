@@ -65,8 +65,8 @@ impl Request{
 	pub fn record_log(&mut self,time:&str, write_log_file: &Arc<Mutex<OpenOptions>>){
 		let format_log = "Request Time: ".to_owned()+time+"\r\n"+&self.request_info+"\r\n";
 		match write_into_file(&format_log,write_log_file){
-			Err(_)=>println!("Failed to record logs"),
-			Ok(_) => println!("Log Recorded"),
+			Err(_)=>println!("Failed to record request logs"),
+			Ok(_) => println!("Request Log Recorded"),
 		}
 	}
 

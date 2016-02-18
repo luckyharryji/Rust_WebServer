@@ -5,7 +5,7 @@
 	Host is in the local 127.0.0.1  port: 8000
 
 	Reference:
-		The way to write test for this server is finished by the discussion and guidence of Jiaju Ni
+		The way to write test for this server is finished by the discussion with Jiaju Ni
 	
 	INPUT:
 		The program will run to wait for the request to the host    

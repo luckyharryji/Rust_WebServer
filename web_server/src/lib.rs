@@ -88,22 +88,34 @@ mod lib_function_test {
 
 		{
 			let log_mutex = Arc::new(Mutex::new(OpenOptions::new()));
-			write_into_file(&line1, &log_mutex);
+
+			match write_into_file(&line1, &log_mutex){
+				Err(_)=>println!("Failed to record logs"),
+				Ok(_) => println!("Log Recorded"),
+			}
 
 			let mut f = File::open("log.txt").unwrap();
 
-			f.seek(SeekFrom::Start(eof));
+			if let Err(_) = f.seek(SeekFrom::Start(eof)){
+				println!("File Seek Error");
+			};
+
 			let mut s = String::new();
 			f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned(), s); 
 			s.clear();
 			drop(f);
 
-			write_into_file(&line2, &log_mutex);
+			match write_into_file(&line2, &log_mutex){
+				Err(_)=>println!("Failed to record logs"),
+				Ok(_) => println!("Log Recorded"),
+			}
 
 			let mut f = File::open("log.txt").unwrap();
 
-			f.seek(SeekFrom::Start(eof));
+			if let Err(_) = f.seek(SeekFrom::Start(eof)){
+				println!("File Seek Error");
+			};
 			f.read_to_string(&mut s).unwrap();
 			assert_eq!(line1.to_owned() + line2, s); 
 			drop(f);

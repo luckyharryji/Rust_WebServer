@@ -56,8 +56,8 @@ impl <'a>Response<'a>{
 	pub fn record_log(&mut self,time:&str,status_code:usize,write_log_file: &Arc<Mutex<OpenOptions>>){
 		let format_log = "Response Time: ".to_owned()+time+"\r\n"+"Response Status Code: "+&status_code.to_string()+"\r\n\r\n";
 		match write_into_file(&format_log,write_log_file){
-			Err(_)=>println!("Failed to record logs"),
-			Ok(_) => println!("Log Recorded"),
+			Err(_)=>println!("Failed to record response logs"),
+			Ok(_) => println!("Response Log Recorded"),
 		}
 	}
 
