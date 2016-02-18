@@ -2,7 +2,7 @@
 	__author__ = 'Xiangyu Ji,  Nianzu Li'
 	
 	This program create a demo web server with Rust which can parse Get http request
-	Host is in the local 127.0.0.1  port: 8000
+	Host is in the local 127.0.0.1  port: 8080
 
 	Reference:
 		The way to write test for this server is finished by the discussion with Jiaju Ni
