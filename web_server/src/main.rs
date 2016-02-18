@@ -136,7 +136,7 @@ mod http_stream_test {
     }
 
 	#[test]
-	fn test_success_get_file(){
+	fn test_success_get_html(){
 		thread::spawn(move || {
 			initial_bind_server(8000);
         });
@@ -148,7 +148,7 @@ mod http_stream_test {
 	}
 
 	#[test]
-	fn test_success_get_html(){
+	fn test_success_get_file(){
 		thread::spawn(move || {
 			initial_bind_server(8002);
         });
