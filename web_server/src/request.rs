@@ -14,6 +14,7 @@ pub struct Request{
 	url: String,
 	stream:TcpStream,
 	request_info:String,
+	not_find_page:String,
 }
 
 
@@ -55,6 +56,7 @@ impl Request{
 			url: file_addr,
 			stream:stream,
 			request_info:log_request_info,
+			not_find_page: ".//404.html".to_owned(),
 		}
 	}
 
@@ -97,7 +99,10 @@ impl Request{
 				return self.form_response(200, Some(s));
 			}
 		}
-		return self.form_response(404, None);
+		match get_file_content(&Path::new(&self.not_find_page)){
+			Err(_)=>return self.form_response(404, None),
+			Ok(s)=>return self.form_response(404,Some(s)),
+		}
 	}
 
 	// process when request for a file
@@ -105,7 +110,12 @@ impl Request{
 		match get_file_content(&Path::new(&self.url)){
 			Err(meg) => {
 				match meg.kind(){
-					ErrorKind::NotFound => self.form_response(404, None),
+					ErrorKind::NotFound => {
+						match get_file_content(&Path::new(&self.not_find_page)){
+							Err(_)=>self.form_response(404, None),
+							Ok(s)=>self.form_response(404,Some(s)),
+						}
+					},
 					ErrorKind::PermissionDenied => self.form_response(403, None),
 					_ => self.form_response(400, None),
 				}
@@ -124,6 +134,7 @@ impl Request{
 					false => Some("plain".to_owned()),
 				}
 			},
+			404=>Some("html".to_owned()),
 			_ => None,
 		};
 		match content{
@@ -134,12 +145,4 @@ impl Request{
 			None => Response::new(code, None, None, response_file_type, &self.stream),
 		}
 	}
-}
-
-#[cfg(test)]
-mod request_test {
-
-	use super::Request;
-
-
 }
